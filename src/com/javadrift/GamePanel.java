@@ -10,15 +10,13 @@ public class GamePanel extends JPanel implements Runnable {
     final int ANCHO = 800;
     final int ALTO = 600;
 
-    int carroX = 375;
-    int carroY = 275;
-    int velocidad = 3;
-
     Thread hiloJuego;
     KeyHandler teclado = new KeyHandler();
 
+    CarroJugador jugador = new CarroJugador(375, 275);
+
     public GamePanel() {
-        this.setPreferredSize(new Dimension(ANCHO, ALTO));
+        this.setPreferredSize(new Dimension(ANCHO,ALTO));
         this.setBackground(Color.DARK_GRAY);
         this.setFocusable(true);
         this.addKeyListener(teclado);
@@ -43,10 +41,7 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void actualizar() {
-        if (teclado.arribaPresionada) carroY -= velocidad;
-        if (teclado.abajoPresionada) carroY += velocidad;
-        if (teclado.izquierdaPresionada) carroX -= velocidad;
-        if (teclado.derechaPresionada) carroX += velocidad;
+        jugador.mover(teclado);
     }
 
     @Override
@@ -54,11 +49,11 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
 
         g.setColor(Color.GREEN);
-        g.fillRect(0, 0, ANCHO, ALTO);
+        g.fillRect(0,0,ANCHO, ALTO);
 
-        g.setColor(Color.RED);
-        g.fillRect(carroX, carroY, 50, 30);
+        jugador.dibujar(g);
     }
+
 }
 
 
