@@ -22,7 +22,7 @@ public class GamePanel extends JPanel implements Runnable {
     Thread hiloJuego;
     KeyHandler teclado = new KeyHandler();
 
-    CarroJugador jugador = new CarroJugador(375, 275);
+    CarroJugador jugador;
     ArrayList<CarroRival> rivales = new ArrayList<>();
 
     // Contador de vueltas y cronometro
@@ -32,18 +32,19 @@ public class GamePanel extends JPanel implements Runnable {
     long tiempoTranscurrido;
     boolean juegoTerminado = false;
 
-    public GamePanel() {
+    public GamePanel(String nombreJugador, Color colorJugador) {
         this.setPreferredSize(new Dimension(ANCHO, ALTO));
         this.setBackground(Color.DARK_GRAY);
         this.setFocusable(true);
         this.addKeyListener(teclado);
+
+        jugador = new CarroJugador(375, 275, colorJugador, nombreJugador);
 
         rivales.add(new CarroRival(100, 100, Color.BLUE, "Rival 1"));
         rivales.add(new CarroRival(200, 100, Color.YELLOW, "Rival 2"));
 
         tiempoInicio = System.currentTimeMillis();
     }
-
     public void iniciarJuego() {
         hiloJuego = new Thread(this);
         hiloJuego.start();

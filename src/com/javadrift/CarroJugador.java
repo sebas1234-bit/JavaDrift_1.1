@@ -1,10 +1,11 @@
 package com.javadrift;
+
 import java.awt.Color;
-import java.awt.Graphics;
 
 public class CarroJugador extends Vehiculo {
-    public CarroJugador(int x, int y) {
-        super(x, y, 3, Color.RED, "Jugador");
+
+    public CarroJugador(int x, int y, Color color, String nombre) {
+        super(x, y, 3, color, nombre);
     }
 
     @Override
@@ -14,5 +15,4 @@ public class CarroJugador extends Vehiculo {
         if (teclado.izquierdaPresionada) x -= velocidad;
         if (teclado.derechaPresionada)   x += velocidad;
     }
-
 }
