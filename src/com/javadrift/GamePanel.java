@@ -12,7 +12,6 @@ public class GamePanel extends JPanel implements Runnable {
     final int ANCHO = 800;
     final int ALTO = 600;
 
-    // Meta: rectangulo invisible que detecta cuando el carro la cruza
     final int META_X = 350;
     final int META_Y = 250;
     final int META_ANCHO = 10;
@@ -25,7 +24,6 @@ public class GamePanel extends JPanel implements Runnable {
     CarroJugador jugador;
     ArrayList<CarroRival> rivales = new ArrayList<>();
 
-    // Contador de vueltas y cronometro
     int vueltasJugador = 0;
     boolean jugadorEnMeta = false;
     long tiempoInicio;
@@ -45,6 +43,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         tiempoInicio = System.currentTimeMillis();
     }
+
     public void iniciarJuego() {
         hiloJuego = new Thread(this);
         hiloJuego.start();
@@ -64,17 +63,20 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void actualizar() {
-        if (juegoTerminado) return;
+        if (juegoTerminado) {
+            if (teclado.rPresionada) {
+                volverAlLobby();
+            }
+            return;
+        }
 
         jugador.mover(teclado);
         for (CarroRival rival : rivales) {
             rival.mover(teclado);
         }
 
-        // Actualizar cronometro
         tiempoTranscurrido = System.currentTimeMillis() - tiempoInicio;
 
-        // Detectar si el jugador cruza la meta
         boolean enMetaAhora = jugador.getX() >= META_X &&
                 jugador.getX() <= META_X + META_ANCHO &&
                 jugador.getY() >= META_Y &&
@@ -97,35 +99,69 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Fondo verde
         g.setColor(Color.GREEN);
         g.fillRect(0, 0, ANCHO, ALTO);
 
-        // Dibujar meta
         g.setColor(Color.WHITE);
         g.fillRect(META_X, META_Y, META_ANCHO, META_ALTO);
 
-        // Dibujar carros
         jugador.dibujar(g);
         for (CarroRival rival : rivales) {
             rival.dibujar(g);
         }
 
-        // HUD - informacion en pantalla
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         g.drawString("Vuelta: " + vueltasJugador + " / " + TOTAL_VUELTAS, 20, 30);
         g.drawString("Tiempo: " + (tiempoTranscurrido / 1000) + "s", 20, 55);
 
-        // Pantalla de fin de juego
         if (juegoTerminado) {
-            g.setColor(new Color(0, 0, 0, 150));
-            g.fillRect(0, 0, ANCHO, ALTO);
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 40));
-            g.drawString("¡Ganaste!", 300, 250);
-            g.setFont(new Font("Arial", Font.BOLD, 25));
-            g.drawString("Tiempo: " + (tiempoTranscurrido / 1000) + "s", 320, 300);
+            dibujarClasificacion(g);
         }
+    }
+
+    public void dibujarClasificacion(Graphics g) {
+        g.setColor(new Color(0, 0, 0, 180));
+        g.fillRect(0, 0, ANCHO, ALTO);
+
+        g.setColor(Color.YELLOW);
+        g.setFont(new Font("Arial", Font.BOLD, 45));
+        g.drawString("CARRERA TERMINADA", 150, 100);
+
+        g.setColor(Color.YELLOW);
+        g.setFont(new Font("Arial", Font.BOLD, 25));
+        g.drawString("1° " + jugador.getNombre(), 200, 200);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        g.drawString("Tiempo: " + (tiempoTranscurrido / 1000) + "s", 220, 235);
+
+        g.setColor(Color.LIGHT_GRAY);
+        g.setFont(new Font("Arial", Font.BOLD, 25));
+        g.drawString("2° " + rivales.get(0).getNombre(), 200, 300);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        g.drawString("Tiempo: " + ((tiempoTranscurrido / 1000) + 5) + "s", 220, 335);
+
+        g.setColor(new Color(205, 127, 50));
+        g.setFont(new Font("Arial", Font.BOLD, 25));
+        g.drawString("3° " + rivales.get(1).getNombre(), 200, 400);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        g.drawString("Tiempo: " + ((tiempoTranscurrido / 1000) + 10) + "s", 220, 435);
+
+        g.setColor(Color.GREEN);
+        g.setFont(new Font("Arial", Font.BOLD, 22));
+        g.drawString("Presiona R para volver al lobby", 220, 530);
+    }
+
+    private void volverAlLobby() {
+        javax.swing.JFrame ventana = (javax.swing.JFrame)
+                javax.swing.SwingUtilities.getWindowAncestor(this);
+        LobbyPanel lobby = new LobbyPanel(ventana);
+        ventana.getContentPane().removeAll();
+        ventana.getContentPane().add(lobby);
+        ventana.revalidate();
+        lobby.requestFocus();
+        hiloJuego = null;
     }
 }
