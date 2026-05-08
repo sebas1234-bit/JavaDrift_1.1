@@ -4,8 +4,9 @@ import java.awt.Color;
 
 public class CarroJugador extends Vehiculo {
 
-    public CarroJugador(int x, int y, Color color, String nombre) {
-        super(x, y, 3, color, nombre);
+    public CarroJugador(int x, int y, Color color, String nombre)
+    {
+        super(x, y, 3, color, nombre, "car_blue_3.png");
     }
 
     @Override

@@ -38,8 +38,8 @@ public class GamePanel extends JPanel implements Runnable {
 
         jugador = new CarroJugador(375, 275, colorJugador, nombreJugador);
 
-        rivales.add(new CarroRival(100, 100, Color.BLUE, "Rival 1"));
-        rivales.add(new CarroRival(200, 100, Color.YELLOW, "Rival 2"));
+        rivales.add(new CarroRival(100, 100, Color.BLUE, "Rival 1", "car_black_4.png"));
+        rivales.add(new CarroRival(200, 100, Color.RED, "Rival 2", "car_red_4.png"));
 
         tiempoInicio = System.currentTimeMillis();
     }

@@ -2,28 +2,41 @@ package com.javadrift;
 
 import java.awt.Color;
 import java.awt.Graphics;
-
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 
 public abstract class Vehiculo {
+
     protected int x;
     protected int y;
     protected int velocidad;
     protected Color color;
     protected String nombre;
+    protected BufferedImage imagen;
 
-    public Vehiculo(int x, int y, int velocidad, Color color, String nombre) {
+    public Vehiculo(int x, int y, int velocidad, Color color, String nombre, String rutaImagen) {
         this.x = x;
         this.y = y;
         this.velocidad = velocidad;
         this.color = color;
         this.nombre = nombre;
+
+        try {
+            imagen = ImageIO.read(getClass().getClassLoader().getResourceAsStream("resources/" + rutaImagen));
+        } catch (Exception e) {
+            imagen = null;
+        }
     }
 
     public abstract void mover(KeyHandler teclado);
 
     public void dibujar(Graphics g) {
-        g.setColor(this.color);
-        g.fillRect(x, y, 50, 30);
+        if (imagen != null) {
+            g.drawImage(imagen, x, y, 50, 30, null);
+        } else {
+            g.setColor(this.color);
+            g.fillRect(x, y, 50, 30);
+        }
         g.setColor(Color.WHITE);
         g.drawString(nombre, x, y - 5);
     }
@@ -31,5 +44,4 @@ public abstract class Vehiculo {
     public int getX() { return x; }
     public int getY() { return y; }
     public String getNombre() { return nombre; }
-
 }

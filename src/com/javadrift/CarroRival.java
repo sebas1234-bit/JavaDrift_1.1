@@ -7,8 +7,8 @@ public class CarroRival extends Vehiculo{
     private int[] rutaY = {100, 80, 80, 300, 500, 500, 500, 300};
     private int puntoActual = 0;
 
-    public CarroRival(int x, int y, Color color, String nombre) {
-        super(x, y, 2, color, nombre);
+    public CarroRival(int x, int y, Color color, String nombre, String rutaImagen) {
+        super(x, y, 2, color, nombre, rutaImagen);
     }
 
     @Override
