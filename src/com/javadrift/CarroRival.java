@@ -12,7 +12,7 @@ public class CarroRival extends Vehiculo {
     private int[] rutaY = {80,  120, 280, 450, 520, 450, 280, 120};
     private int puntoActual = 0;
     double angulo = 0;
-    double velocidadActual = 0;
+    public double velocidadActual = 0;
     final double VEL_MAX = 2.5;
     final double ACELERACION = 0.1;
 

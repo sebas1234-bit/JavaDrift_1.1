@@ -74,6 +74,20 @@ public class GamePanel extends JPanel implements Runnable {
             rival.mover(teclado);
         }
 
+        // Colision entre jugador y rivales
+        for (CarroRival rival : rivales) {
+            int dx = jugador.getX() - rival.getX();
+            int dy = jugador.getY() - rival.getY();
+            double distancia = Math.sqrt(dx * dx + dy * dy);
+
+            if (distancia < 50) {
+                jugador.velocidadActual *= -0.5;
+                rival.velocidadActual *= -0.5;
+                jugador.x += dx > 0 ? 5 : -5;
+                jugador.y += dy > 0 ? 5 : -5;
+            }
+        }
+
         tiempoTranscurrido = System.currentTimeMillis() - tiempoInicio;
 
         boolean enMetaAhora = jugador.getX() >= META_X &&
