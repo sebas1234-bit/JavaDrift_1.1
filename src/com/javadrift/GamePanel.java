@@ -75,6 +75,7 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         // Colision entre jugador y rivales
+        // Colision jugador con rivales
         for (CarroRival rival : rivales) {
             int dx = jugador.getX() - rival.getX();
             int dy = jugador.getY() - rival.getY();
@@ -83,8 +84,30 @@ public class GamePanel extends JPanel implements Runnable {
             if (distancia < 50) {
                 jugador.velocidadActual *= -0.5;
                 rival.velocidadActual *= -0.5;
-                jugador.x += dx > 0 ? 5 : -5;
-                jugador.y += dy > 0 ? 5 : -5;
+                jugador.x += dx > 0 ? 8 : -8;
+                jugador.y += dy > 0 ? 8 : -8;
+                rival.x -= dx > 0 ? 8 : -8;
+                rival.y -= dy > 0 ? 8 : -8;
+            }
+        }
+
+        // Colision entre rivales
+        for (int i = 0; i < rivales.size(); i++) {
+            for (int j = i + 1; j < rivales.size(); j++) {
+                CarroRival r1 = rivales.get(i);
+                CarroRival r2 = rivales.get(j);
+                int dx = r1.getX() - r2.getX();
+                int dy = r1.getY() - r2.getY();
+                double distancia = Math.sqrt(dx * dx + dy * dy);
+
+                if (distancia < 50) {
+                    r1.velocidadActual *= -0.3;
+                    r2.velocidadActual *= -0.3;
+                    r1.x += dx > 0 ? 8 : -8;
+                    r1.y += dy > 0 ? 8 : -8;
+                    r2.x -= dx > 0 ? 8 : -8;
+                    r2.y -= dy > 0 ? 8 : -8;
+                }
             }
         }
 

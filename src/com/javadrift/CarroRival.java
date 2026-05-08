@@ -13,11 +13,20 @@ public class CarroRival extends Vehiculo {
     private int puntoActual = 0;
     double angulo = 0;
     public double velocidadActual = 0;
-    final double VEL_MAX = 2.5;
-    final double ACELERACION = 0.1;
+    final double VEL_MAX;
+    final double ACELERACION;
 
     public CarroRival(int x, int y, Color color, String nombre, String rutaImagen) {
         super(x, y, 2, color, nombre, rutaImagen);
+
+        // Cada rival tiene velocidad diferente
+        if (nombre.equals("Rival 1")) {
+            VEL_MAX = 3.5;
+            ACELERACION = 0.12;
+        } else {
+            VEL_MAX = 4.5;
+            ACELERACION = 0.18;
+        }
     }
 
     @Override
