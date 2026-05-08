@@ -161,10 +161,25 @@ public class GamePanel extends JPanel implements Runnable {
             rival.dibujar(g);
         }
 
-        g.setColor(Color.BLACK);
+        // Fondo del HUD
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRoundRect(10, 10, 200, 100, 15, 15);
+
+        // Textos del HUD
+        g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 18));
-        g.drawString("Vuelta: " + vueltasJugador + " / " + TOTAL_VUELTAS, 20, 30);
-        g.drawString("Tiempo: " + (tiempoTranscurrido / 1000) + "s", 20, 55);
+        g.drawString("Vuelta: " + vueltasJugador + " / " + TOTAL_VUELTAS, 20, 35);
+        g.drawString("Tiempo: " + (tiempoTranscurrido / 1000) + "s", 20, 60);
+
+        // Velocimetro
+        int velActual = (int)(Math.abs(jugador.velocidadActual) * 20);
+        g.drawString("Vel: " + velActual + " km/h", 20, 85);
+
+        // Barra de velocidad
+        g.setColor(new Color(50, 50, 50));
+        g.fillRoundRect(20, 92, 160, 12, 5, 5);
+        g.setColor(velActual > 80 ? Color.RED : Color.GREEN);
+        g.fillRoundRect(20, 92, velActual * 160 / 100, 12, 5, 5);
 
         if (juegoTerminado) {
             dibujarClasificacion(g);
