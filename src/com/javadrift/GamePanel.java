@@ -13,7 +13,7 @@ public class GamePanel extends JPanel implements Runnable {
     final int ALTO = 600;
 
     final int META_X = 350;
-    final int META_Y = 250;
+    final int META_Y = 55;
     final int META_ANCHO = 10;
     final int META_ALTO = 80;
     final int TOTAL_VUELTAS = 3;
@@ -36,10 +36,9 @@ public class GamePanel extends JPanel implements Runnable {
         this.setFocusable(true);
         this.addKeyListener(teclado);
 
-        jugador = new CarroJugador(375, 275, colorJugador, nombreJugador);
-
-        rivales.add(new CarroRival(100, 100, Color.BLUE, "Rival 1", "car_black_4.png"));
-        rivales.add(new CarroRival(200, 100, Color.RED, "Rival 2", "car_red_4.png"));
+        jugador = new CarroJugador(370, 80, colorJugador, nombreJugador);
+        rivales.add(new CarroRival(320, 80, Color.BLUE, "Rival 1", "car_black_4.png"));
+        rivales.add(new CarroRival(270, 80, Color.RED, "Rival 2", "car_red_4.png"));
 
         tiempoInicio = System.currentTimeMillis();
     }
@@ -99,11 +98,26 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        g.setColor(Color.GREEN);
+        // Fondo gris (area fuera de pista)
+        g.setColor(new Color(80, 80, 80));
         g.fillRect(0, 0, ANCHO, ALTO);
 
+        // Pista oval (area verde)
+        g.setColor(new Color(50, 150, 50));
+        g.fillOval(50, 50, 700, 500);
+
+        // Interior de la pista (area gris interna)
+        g.setColor(new Color(80, 80, 80));
+        g.fillOval(150, 130, 500, 340);
+
+        // Linea de meta
         g.setColor(Color.WHITE);
         g.fillRect(META_X, META_Y, META_ANCHO, META_ALTO);
+
+        // Lineas de la pista
+        g.setColor(new Color(255, 255, 255, 80));
+        g.drawOval(50, 50, 700, 500);
+        g.drawOval(150, 130, 500, 340);
 
         jugador.dibujar(g);
         for (CarroRival rival : rivales) {
