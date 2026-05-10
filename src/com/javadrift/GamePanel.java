@@ -31,14 +31,14 @@ public class GamePanel extends JPanel implements Runnable {
     boolean juegoTerminado = false;
     int pistaActual = 0;
 
-    public GamePanel(String nombreJugador, Color colorJugador, int pistaSeleccionada) {
+    public GamePanel(String nombreJugador, String rutaImagenJugador, int pistaSeleccionada) {
         this.setPreferredSize(new Dimension(ANCHO, ALTO));
         this.setBackground(Color.DARK_GRAY);
         this.setFocusable(true);
         this.addKeyListener(teclado);
         this.pistaActual = pistaSeleccionada;
 
-        jugador = new CarroJugador(370, 80, colorJugador, nombreJugador);
+        jugador = new CarroJugador(370, 80, rutaImagenJugador, nombreJugador);
         rivales.add(new CarroRival(320, 80, Color.BLUE, "Rival 1", "car_black_4.png"));
         rivales.add(new CarroRival(270, 80, Color.RED, "Rival 2", "car_red_4.png"));
 

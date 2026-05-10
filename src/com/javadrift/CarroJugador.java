@@ -15,8 +15,8 @@ public class CarroJugador extends Vehiculo {
     final double VEL_MAX = 5.0;
     final double VEL_ROTACION = 3.0;
 
-    public CarroJugador(int x, int y, Color color, String nombre) {
-        super(x, y, 3, color, nombre, "car_blue_3.png");
+    public CarroJugador(int x, int y, String rutaImagen, String nombre) {
+        super(x, y, 3, Color.WHITE, nombre, rutaImagen);
     }
 
     @Override
