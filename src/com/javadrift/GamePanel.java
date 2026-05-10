@@ -29,12 +29,14 @@ public class GamePanel extends JPanel implements Runnable {
     long tiempoInicio;
     long tiempoTranscurrido;
     boolean juegoTerminado = false;
+    int pistaActual = 0;
 
-    public GamePanel(String nombreJugador, Color colorJugador) {
+    public GamePanel(String nombreJugador, Color colorJugador, int pistaSeleccionada) {
         this.setPreferredSize(new Dimension(ANCHO, ALTO));
         this.setBackground(Color.DARK_GRAY);
         this.setFocusable(true);
         this.addKeyListener(teclado);
+        this.pistaActual = pistaSeleccionada;
 
         jugador = new CarroJugador(370, 80, colorJugador, nombreJugador);
         rivales.add(new CarroRival(320, 80, Color.BLUE, "Rival 1", "car_black_4.png"));
@@ -135,26 +137,33 @@ public class GamePanel extends JPanel implements Runnable {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Fondo gris (area fuera de pista)
-        g.setColor(new Color(80, 80, 80));
-        g.fillRect(0, 0, ANCHO, ALTO);
-
-        // Pista oval (area verde)
-        g.setColor(new Color(50, 150, 50));
-        g.fillOval(50, 50, 700, 500);
-
-        // Interior de la pista (area gris interna)
-        g.setColor(new Color(80, 80, 80));
-        g.fillOval(150, 130, 500, 340);
+        if (pistaActual == 0) {
+            // Pista Oval
+            g.setColor(new Color(80, 80, 80));
+            g.fillRect(0, 0, ANCHO, ALTO);
+            g.setColor(new Color(50, 150, 50));
+            g.fillOval(50, 50, 700, 500);
+            g.setColor(new Color(80, 80, 80));
+            g.fillOval(150, 130, 500, 340);
+            g.setColor(new Color(255, 255, 255, 80));
+            g.drawOval(50, 50, 700, 500);
+            g.drawOval(150, 130, 500, 340);
+        } else {
+            // Pista Rapida - forma rectangular con curvas
+            g.setColor(new Color(60, 60, 60));
+            g.fillRect(0, 0, ANCHO, ALTO);
+            g.setColor(new Color(50, 150, 50));
+            g.fillRoundRect(50, 80, 700, 440, 120, 120);
+            g.setColor(new Color(60, 60, 60));
+            g.fillRoundRect(180, 180, 440, 240, 80, 80);
+            g.setColor(new Color(255, 255, 255, 80));
+            g.drawRoundRect(50, 80, 700, 440, 120, 120);
+            g.drawRoundRect(180, 180, 440, 240, 80, 80);
+        }
 
         // Linea de meta
         g.setColor(Color.WHITE);
         g.fillRect(META_X, META_Y, META_ANCHO, META_ALTO);
-
-        // Lineas de la pista
-        g.setColor(new Color(255, 255, 255, 80));
-        g.drawOval(50, 50, 700, 500);
-        g.drawOval(150, 130, 500, 340);
 
         jugador.dibujar(g);
         for (CarroRival rival : rivales) {

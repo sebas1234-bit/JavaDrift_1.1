@@ -17,6 +17,8 @@ public class LobbyPanel extends JPanel implements KeyListener {
     Color[] colores = {Color.RED, Color.BLUE, Color.YELLOW, Color.ORANGE, Color.PINK};
     String[] nombresColores = {"Rojo", "Azul", "Amarillo", "Naranja", "Rosado"};
     int colorSeleccionado = 0;
+    String[] pistas = {"Pista Ovalo", "Pista rapida"};
+    int pistaSeleccionada = 0;
 
     // Nombre del jugador
     String nombreJugador = "";
@@ -57,6 +59,16 @@ public class LobbyPanel extends JPanel implements KeyListener {
         g.setFont(new Font("Arial", Font.PLAIN, 16));
         g.drawString("(flechas izquierda/derecha para cambiar)", 250, 350);
 
+        // Selector de pista
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 22));
+        g.drawString("Pista:", 250, 400);
+        g.setColor(Color.CYAN);
+        g.drawString("< " + pistas[pistaSeleccionada] + " >", 320, 400);
+        g.setColor(Color.LIGHT_GRAY);
+        g.setFont(new Font("Arial", Font.PLAIN, 16));
+        g.drawString("(flechas arriba/abajo para cambiar pista)", 250, 425);
+
         // Instrucciones
         g.setFont(new Font("Arial", Font.BOLD, 20));
         g.setColor(Color.GREEN);
@@ -91,6 +103,16 @@ public class LobbyPanel extends JPanel implements KeyListener {
             iniciarJuego();
         }
 
+        //Selector de pista
+        if (codigo == KeyEvent.VK_UP) {
+            pistaSeleccionada--;
+            if (pistaSeleccionada < 0) pistaSeleccionada = pistas.length - 1;
+        }
+        if (codigo == KeyEvent.VK_DOWN) {
+            pistaSeleccionada++;
+            if (pistaSeleccionada >= pistas.length) pistaSeleccionada = 0;
+        }
+
         repaint();
     }
 
@@ -107,7 +129,7 @@ public class LobbyPanel extends JPanel implements KeyListener {
     public void keyReleased(KeyEvent e) {}
 
     private void iniciarJuego() {
-        GamePanel gamePanel = new GamePanel( nombreJugador, colores[colorSeleccionado] );
+        GamePanel gamePanel = new GamePanel(nombreJugador, colores[colorSeleccionado], pistaSeleccionada);
 
         ventana.getContentPane().removeAll();
         ventana.getContentPane().add(gamePanel);
