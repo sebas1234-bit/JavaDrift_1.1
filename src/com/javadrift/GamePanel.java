@@ -11,7 +11,6 @@ public class GamePanel extends JPanel implements Runnable {
 
     final int ANCHO = 800;
     final int ALTO = 600;
-
     final int META_X = 350;
     final int META_Y = 55;
     final int META_ANCHO = 10;
@@ -20,7 +19,6 @@ public class GamePanel extends JPanel implements Runnable {
 
     Thread hiloJuego;
     KeyHandler teclado = new KeyHandler();
-
     CarroJugador jugador;
     ArrayList<CarroRival> rivales = new ArrayList<>();
 
@@ -64,45 +62,49 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void actualizar() {
-        if (juegoTerminado) {
-            if (teclado.rPresionada) {
-                volverAlLobby();
+        if (juegoTerminado && teclado.rPresionada) {
+            boolean todosTerminaron = true;
+            for (CarroRival rival : rivales) {
+                if (!rival.termino) todosTerminaron = false;
             }
-            return;
+            if (todosTerminaron) volverAlLobby();
         }
 
-        jugador.mover(teclado);
-        for (CarroRival rival : rivales) {
-            rival.mover(teclado);
+        if (!juegoTerminado) {
+            jugador.mover(teclado);
         }
 
-        // Colision entre jugador y rivales
-        // Colision jugador con rivales
         for (CarroRival rival : rivales) {
-            int dx = jugador.getX() - rival.getX();
-            int dy = jugador.getY() - rival.getY();
-            double distancia = Math.sqrt(dx * dx + dy * dy);
-
-            if (distancia < 50) {
-                jugador.velocidadActual *= -0.5;
-                rival.velocidadActual *= -0.5;
-                jugador.x += dx > 0 ? 8 : -8;
-                jugador.y += dy > 0 ? 8 : -8;
-                rival.x -= dx > 0 ? 8 : -8;
-                rival.y -= dy > 0 ? 8 : -8;
+            if (!rival.termino) {
+                rival.mover(teclado);
             }
         }
 
-        // Colision entre rivales
+        if (!juegoTerminado) {
+            for (CarroRival rival : rivales) {
+                int dx = jugador.getX() - rival.getX();
+                int dy = jugador.getY() - rival.getY();
+                double dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 50) {
+                    jugador.velocidadActual *= -0.5;
+                    rival.velocidadActual *= -0.5;
+                    jugador.x += dx > 0 ? 8 : -8;
+                    jugador.y += dy > 0 ? 8 : -8;
+                    rival.x -= dx > 0 ? 8 : -8;
+                    rival.y -= dy > 0 ? 8 : -8;
+                }
+            }
+        }
+
         for (int i = 0; i < rivales.size(); i++) {
             for (int j = i + 1; j < rivales.size(); j++) {
                 CarroRival r1 = rivales.get(i);
                 CarroRival r2 = rivales.get(j);
+                if (r1.termino && r2.termino) continue;
                 int dx = r1.getX() - r2.getX();
                 int dy = r1.getY() - r2.getY();
-                double distancia = Math.sqrt(dx * dx + dy * dy);
-
-                if (distancia < 50) {
+                double dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 50) {
                     r1.velocidadActual *= -0.3;
                     r2.velocidadActual *= -0.3;
                     r1.x += dx > 0 ? 8 : -8;
@@ -113,23 +115,41 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
 
-        tiempoTranscurrido = System.currentTimeMillis() - tiempoInicio;
-
-        boolean enMetaAhora = jugador.getX() >= META_X &&
-                jugador.getX() <= META_X + META_ANCHO &&
-                jugador.getY() >= META_Y &&
-                jugador.getY() <= META_Y + META_ALTO;
-
-        if (enMetaAhora && !jugadorEnMeta) {
-            vueltasJugador++;
-            jugadorEnMeta = true;
-            if (vueltasJugador >= TOTAL_VUELTAS) {
-                juegoTerminado = true;
-            }
+        if (!juegoTerminado) {
+            tiempoTranscurrido = System.currentTimeMillis() - tiempoInicio;
         }
 
-        if (!enMetaAhora) {
-            jugadorEnMeta = false;
+        if (!juegoTerminado) {
+            boolean enMetaAhora = jugador.getX() >= META_X &&
+                    jugador.getX() <= META_X + META_ANCHO &&
+                    jugador.getY() >= META_Y &&
+                    jugador.getY() <= META_Y + META_ALTO;
+            if (enMetaAhora && !jugadorEnMeta) {
+                vueltasJugador++;
+                jugadorEnMeta = true;
+                if (vueltasJugador >= TOTAL_VUELTAS) {
+                    tiempoTranscurrido = System.currentTimeMillis() - tiempoInicio;
+                    juegoTerminado = true;
+                }
+            }
+            if (!enMetaAhora) jugadorEnMeta = false;
+        }
+
+        for (CarroRival rival : rivales) {
+            if (rival.termino) continue;
+            boolean rivalEnMeta = rival.getX() >= META_X - 5 &&
+                    rival.getX() <= META_X + META_ANCHO + 5 &&
+                    rival.getY() >= META_Y &&
+                    rival.getY() <= META_Y + META_ALTO;
+            if (rivalEnMeta && !rival.enMeta && rival.vueltas < TOTAL_VUELTAS) {
+                rival.vueltas++;
+                rival.enMeta = true;
+                if (rival.vueltas >= TOTAL_VUELTAS) {
+                    rival.termino = true;
+                    rival.tiempoFinal = System.currentTimeMillis() - tiempoInicio;
+                }
+            }
+            if (!rivalEnMeta) rival.enMeta = false;
         }
     }
 
@@ -138,7 +158,6 @@ public class GamePanel extends JPanel implements Runnable {
         super.paintComponent(g);
 
         if (pistaActual == 0) {
-            // Pista Oval
             g.setColor(new Color(80, 80, 80));
             g.fillRect(0, 0, ANCHO, ALTO);
             g.setColor(new Color(50, 150, 50));
@@ -149,7 +168,6 @@ public class GamePanel extends JPanel implements Runnable {
             g.drawOval(50, 50, 700, 500);
             g.drawOval(150, 130, 500, 340);
         } else {
-            // Pista Rapida - forma rectangular con curvas
             g.setColor(new Color(60, 60, 60));
             g.fillRect(0, 0, ANCHO, ALTO);
             g.setColor(new Color(50, 150, 50));
@@ -161,7 +179,6 @@ public class GamePanel extends JPanel implements Runnable {
             g.drawRoundRect(180, 180, 440, 240, 80, 80);
         }
 
-        // Linea de meta
         g.setColor(Color.WHITE);
         g.fillRect(META_X, META_Y, META_ANCHO, META_ALTO);
 
@@ -170,25 +187,23 @@ public class GamePanel extends JPanel implements Runnable {
             rival.dibujar(g);
         }
 
-        // Fondo del HUD
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRoundRect(10, 10, 200, 100, 15, 15);
-
-        // Textos del HUD
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         g.drawString("Vuelta: " + vueltasJugador + " / " + TOTAL_VUELTAS, 20, 35);
         g.drawString("Tiempo: " + (tiempoTranscurrido / 1000) + "s", 20, 60);
 
-        // Velocimetro
         int velActual = (int)(Math.abs(jugador.velocidadActual) * 20);
         g.drawString("Vel: " + velActual + " km/h", 20, 85);
-
-        // Barra de velocidad
         g.setColor(new Color(50, 50, 50));
         g.fillRoundRect(20, 92, 160, 12, 5, 5);
         g.setColor(velActual > 80 ? Color.RED : Color.GREEN);
-        g.fillRoundRect(20, 92, velActual * 160 / 100, 12, 5, 5);
+        g.fillRoundRect(20, 92, Math.min(velActual * 160 / 100, 160), 12, 5, 5);
+
+        // Zona de deteccion de meta para rivales (temporal para debug)
+        g.setColor(new Color(255, 0, 0, 100));
+        g.fillRect(META_X - 5, META_Y, META_ANCHO + 10, META_ALTO);
 
         if (juegoTerminado) {
             dibujarClasificacion(g);
@@ -196,33 +211,62 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void dibujarClasificacion(Graphics g) {
-        g.setColor(new Color(0, 0, 0, 180));
-        g.fillRect(0, 0, ANCHO, ALTO);
+        boolean todosTerminaron = true;
+        for (CarroRival rival : rivales) {
+            if (!rival.termino) todosTerminaron = false;
+        }
 
+        if (!todosTerminaron) {
+            g.setColor(new Color(0, 0, 0, 150));
+            g.fillRoundRect(200, 250, 400, 100, 20, 20);
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font("Arial", Font.BOLD, 28));
+            g.drawString("Esperando rivales...", 230, 290);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 16));
+            for (int i = 0; i < rivales.size(); i++) {
+                CarroRival rival = rivales.get(i);
+                g.drawString(rival.getNombre() + ": vuelta " +
+                                rival.vueltas + "/" + TOTAL_VUELTAS,
+                        230, 315 + (i * 25));
+            }
+            return;
+        }
+
+        g.setColor(new Color(0, 0, 0, 200));
+        g.fillRect(0, 0, ANCHO, ALTO);
         g.setColor(Color.YELLOW);
         g.setFont(new Font("Arial", Font.BOLD, 45));
         g.drawString("CARRERA TERMINADA", 150, 100);
 
-        g.setColor(Color.YELLOW);
-        g.setFont(new Font("Arial", Font.BOLD, 25));
-        g.drawString("1° " + jugador.getNombre(), 200, 200);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 20));
-        g.drawString("Tiempo: " + (tiempoTranscurrido / 1000) + "s", 220, 235);
+        String[] nombres = {jugador.getNombre(),
+                rivales.get(0).getNombre(),
+                rivales.get(1).getNombre()};
+        long[] tiempos = {tiempoTranscurrido,
+                rivales.get(0).tiempoFinal,
+                rivales.get(1).tiempoFinal};
 
-        g.setColor(Color.LIGHT_GRAY);
-        g.setFont(new Font("Arial", Font.BOLD, 25));
-        g.drawString("2° " + rivales.get(0).getNombre(), 200, 300);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 20));
-        g.drawString("Tiempo: " + ((tiempoTranscurrido / 1000) + 5) + "s", 220, 335);
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2 - i; j++) {
+                if (tiempos[j] > tiempos[j + 1]) {
+                    long tempT = tiempos[j]; tiempos[j] = tiempos[j+1]; tiempos[j+1] = tempT;
+                    String tempN = nombres[j]; nombres[j] = nombres[j+1]; nombres[j+1] = tempN;
+                }
+            }
+        }
 
-        g.setColor(new Color(205, 127, 50));
-        g.setFont(new Font("Arial", Font.BOLD, 25));
-        g.drawString("3° " + rivales.get(1).getNombre(), 200, 400);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 20));
-        g.drawString("Tiempo: " + ((tiempoTranscurrido / 1000) + 10) + "s", 220, 435);
+        Color[] coloresPodio = {Color.YELLOW, Color.LIGHT_GRAY, new Color(205, 127, 50)};
+        String[] posiciones = {"1°", "2°", "3°"};
+        int[] posY = {200, 300, 400};
+
+        for (int i = 0; i < 3; i++) {
+            g.setColor(coloresPodio[i]);
+            g.setFont(new Font("Arial", Font.BOLD, 25));
+            g.drawString(posiciones[i] + " " + nombres[i], 200, posY[i]);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            g.drawString("Tiempo: " + (tiempos[i] / 1000) + "s", 220, posY[i] + 35);
+        }
 
         g.setColor(Color.GREEN);
         g.setFont(new Font("Arial", Font.BOLD, 22));
