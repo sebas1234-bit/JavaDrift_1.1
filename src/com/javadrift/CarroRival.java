@@ -13,6 +13,10 @@ public class CarroRival extends Vehiculo {
     private int puntoActual = 0;
     double angulo = 0;
     public double velocidadActual = 0;
+    public int vueltas = 0;
+    public boolean enMeta = false;
+    public boolean termino = false;
+    public long tiempoFinal = 0;
     final double VEL_MAX;
     final double ACELERACION;
 
