@@ -53,6 +53,9 @@ public class GamePanel extends JPanel implements Runnable {
     long tiempoInicio;
     long tiempoTranscurrido;
     boolean juegoTerminado = false;
+    int cuentaRegresiva = 3;
+    long tiempoUltimaCuenta;
+    boolean carreraIniciada = false;
     int pistaActual = 0;
 
     // Imagen de la pista capturada una sola vez al iniciar
@@ -65,12 +68,13 @@ public class GamePanel extends JPanel implements Runnable {
         this.addKeyListener(teclado);
         this.pistaActual = pistaSeleccionada;
 
-        jugador = new CarroJugador(370, 80, rutaImagenJugador, nombreJugador);
-        rivales.add(new CarroRival(300, 80, Color.BLUE, "Rival 1", "car_black_4.png"));
-        rivales.add(new CarroRival(230, 80, Color.RED, "Rival 2", "car_red_4.png"));
+        jugador = new CarroJugador(390, 75, rutaImagenJugador, nombreJugador);
+        rivales.add(new CarroRival(390, 108, Color.BLUE, "Rival 1", "car_black_4.png", pistaActual));
+        rivales.add(new CarroRival(390, 141, Color.RED, "Rival 2", "car_red_4.png", pistaActual));
 
         tiempoInicio = System.currentTimeMillis();
         pistaCacheada = capturarPista();
+        tiempoUltimaCuenta = System.currentTimeMillis();
     }
 
     // Retorna los checkpoints de la pista actual
@@ -97,6 +101,20 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void actualizar() {
+        // Cuenta regresiva antes de arrancar
+        if (!carreraIniciada) {
+            long ahora = System.currentTimeMillis();
+            if (ahora - tiempoUltimaCuenta >= 1000) {
+                cuentaRegresiva--;
+                tiempoUltimaCuenta = ahora;
+                if (cuentaRegresiva <= 0) {
+                    carreraIniciada = true;
+                    tiempoInicio = System.currentTimeMillis();
+                }
+            }
+            return;
+        }
+
         // Volver al lobby solo si todos terminaron y se presiona R
         if (juegoTerminado && teclado.rPresionada) {
             boolean todosTerminaron = true;
@@ -118,35 +136,30 @@ public class GamePanel extends JPanel implements Runnable {
             }
         }
 
-        // Colision jugador con rivales usando Vector2D
+        // Colision jugador con rivales — separacion sin rebote
         if (!juegoTerminado) {
             for (CarroRival rival : rivales) {
                 Vector2D posJugador = new Vector2D(jugador.getX(), jugador.getY());
                 Vector2D posRival   = new Vector2D(rival.getX(),   rival.getY());
                 double distancia = posJugador.distanciaA(posRival);
 
-                if (distancia < 50 && distancia > 0) {
+                if (distancia < 36 && distancia > 0) {
                     Vector2D separacion = new Vector2D(
                             jugador.getX() - rival.getX(),
                             jugador.getY() - rival.getY()
                     );
                     Vector2D direccion = separacion.normalizar();
+                    double overlap = 36 - distancia;
 
-                    jugador.velocidadActual *= -0.5;
-                    rival.velocidadActual   *= -0.5;
-
-                    Vector2D empujeJugador = direccion.escalado(8);
-                    Vector2D empujeRival   = direccion.escalado(-8);
-
-                    jugador.x += (int) empujeJugador.x;
-                    jugador.y += (int) empujeJugador.y;
-                    rival.x   += (int) empujeRival.x;
-                    rival.y   += (int) empujeRival.y;
+                    jugador.x += (int)(direccion.x * overlap * 0.5);
+                    jugador.y += (int)(direccion.y * overlap * 0.5);
+                    rival.x   -= (int)(direccion.x * overlap * 0.5);
+                    rival.y   -= (int)(direccion.y * overlap * 0.5);
                 }
             }
         }
 
-        // Colision entre rivales usando Vector2D
+        // Colision entre rivales — separacion sin rebote
         for (int i = 0; i < rivales.size(); i++) {
             for (int j = i + 1; j < rivales.size(); j++) {
                 CarroRival r1 = rivales.get(i);
@@ -157,38 +170,37 @@ public class GamePanel extends JPanel implements Runnable {
                 Vector2D pos2 = new Vector2D(r2.getX(), r2.getY());
                 double distancia = pos1.distanciaA(pos2);
 
-                if (distancia < 35 && distancia > 0) {
+                if (distancia < 36 && distancia > 0) {
                     Vector2D separacion = new Vector2D(
                             r1.getX() - r2.getX(),
                             r1.getY() - r2.getY()
                     );
                     Vector2D direccion = separacion.normalizar();
+                    double overlap = 36 - distancia;
 
-                    r1.velocidadActual *= -0.3;
-                    r2.velocidadActual *= -0.3;
-
-                    Vector2D empuje1 = direccion.escalado(8);
-                    Vector2D empuje2 = direccion.escalado(-8);
-
-                    r1.x += (int) empuje1.x;
-                    r1.y += (int) empuje1.y;
-                    r2.x += (int) empuje2.x;
-                    r2.y += (int) empuje2.y;
+                    r1.x += (int)(direccion.x * overlap * 0.5);
+                    r1.y += (int)(direccion.y * overlap * 0.5);
+                    r2.x -= (int)(direccion.x * overlap * 0.5);
+                    r2.y -= (int)(direccion.y * overlap * 0.5);
                 }
             }
         }
 
-        // Colision con bordes de pista usando empuje vectorial
+        // Pasto exterior — frena progresivamente sin detener
         if (carroPisaPasto(pistaCacheada, jugador.getX(), jugador.getY())) {
-            jugador.velocidadActual *= -0.4;
-            empujarAlAsfalto(jugador);
-        }
-
-        for (CarroRival rival : rivales) {
-            if (carroPisaPasto(pistaCacheada, rival.getX(), rival.getY())) {
-                rival.velocidadActual *= 0.3;
-                empujarAlAsfalto(rival);
-            }
+            int cx = jugador.x + 25;
+            int cy = jugador.y + 15;
+            double dx = cx - CENTRO_PISTA.x;
+            double dy = cy - CENTRO_PISTA.y;
+            double dist = Math.sqrt(dx * dx + dy * dy);
+            // Mientras mas lejos del anillo, mas lento
+            double penetracion = Math.abs(dist - 220) / 100.0;
+            penetracion = Math.min(penetracion, 0.85);
+            jugador.velocidadActual *= (1.0 - penetracion * 0.15);
+            if (jugador.velocidadActual > 0 && jugador.velocidadActual < 0.3)
+                jugador.velocidadActual = 0.3;
+            if (jugador.velocidadActual < 0 && jugador.velocidadActual > -0.3)
+                jugador.velocidadActual = -0.3;
         }
 
         // Actualizar tiempo mientras la carrera sigue
@@ -251,29 +263,39 @@ public class GamePanel extends JPanel implements Runnable {
         }
     }
 
-    // Empuja el vehiculo fuera del pasto usando Vector2D puro sin ajuste manual de ejes
+    // Empuja el vehículo fuera del pasto usando Vector2D puro sin ajuste manual de ejes
     private void empujarAlAsfalto(Vehiculo v) {
-        Vector2D posCarro = new Vector2D(v.getX() + 25, v.getY() + 15);
-        Vector2D haciaCarro = new Vector2D(
-                posCarro.x - CENTRO_PISTA.x,
-                posCarro.y - CENTRO_PISTA.y
-        );
+        // Intentar empujar en 8 direcciones hasta salir del pasto
+        int[][] direcciones = {
+                {0, -1}, {0, 1}, {-1, 0}, {1, 0},
+                {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
+        };
 
-        double distancia = haciaCarro.getMagnitud();
-        if (distancia == 0) return;
+        for (int[] dir : direcciones) {
+            int intentos = 0;
+            int originalX = v.x;
+            int originalY = v.y;
 
-        Vector2D direccion = haciaCarro.normalizar();
-        int signo = distancia > 200 ? -1 : 1;
+            while (carroPisaPasto(pistaCacheada, v.x, v.y) && intentos < 60) {
+                v.x += dir[0] * 2;
+                v.y += dir[1] * 2;
+                intentos++;
+            }
 
-        double tx = v.x;
-        double ty = v.y;
+            if (!carroPisaPasto(pistaCacheada, v.x, v.y)) {
+                return; // Salio del pasto exitosamente
+            }
 
-        for (int i = 0; i < 80; i++) {
-            tx += signo * direccion.x;
-            ty += signo * direccion.y;
-            v.x = (int) tx;
-            v.y = (int) ty;
-            if (!carroPisaPasto(pistaCacheada, v.getX(), v.getY())) break;
+            // Esta direccion no funciono, volver a la posicion original
+            v.x = originalX;
+            v.y = originalY;
+        }
+
+        // Si ninguna direccion funciono, detener el carro
+        if (v instanceof CarroJugador) {
+            ((CarroJugador) v).velocidadActual = 0;
+        } else if (v instanceof CarroRival) {
+            ((CarroRival) v).velocidadActual = 0;
         }
     }
 
@@ -354,6 +376,25 @@ public class GamePanel extends JPanel implements Runnable {
         g.fillRoundRect(20, 107, 160, 12, 5, 5);
         g.setColor(velActual > 80 ? Color.RED : Color.GREEN);
         g.fillRoundRect(20, 107, Math.min(velActual * 160 / 100, 160), 12, 5, 5);
+
+        // Dibujar cuenta regresiva
+        if (!carreraIniciada) {
+            // Fondo semitransparente central
+            g.setColor(new Color(0, 0, 0, 180));
+            g.fillRoundRect(280, 180, 240, 220, 25, 25);
+
+            // Numero
+            g.setColor(cuentaRegresiva == 3 ? Color.RED :
+                    cuentaRegresiva == 2 ? Color.YELLOW : Color.GREEN);
+            g.setFont(new Font("Arial", Font.BOLD, 130));
+            int numX = cuentaRegresiva == 1 ? 355 : 330;
+            g.drawString(String.valueOf(cuentaRegresiva), numX, 340);
+
+            // Texto preparate
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 18));
+            g.drawString("Preparate para correr!", 295, 375);
+        }
 
         if (juegoTerminado) {
             dibujarClasificacion(g);

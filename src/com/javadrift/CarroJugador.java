@@ -17,6 +17,7 @@ public class CarroJugador extends Vehiculo {
 
     public CarroJugador(int x, int y, String rutaImagen, String nombre) {
         super(x, y, 3, Color.WHITE, nombre, rutaImagen);
+        angulo = 90;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class CarroJugador extends Vehiculo {
         g2d.rotate(Math.toRadians(angulo), x + 25, y + 15);
 
         if (imagen != null) {
-            g2d.drawImage(imagen, x, y, 50, 30, null);
+            g.drawImage(imagen, x, y, 36, 22, null);
         } else {
             g2d.setColor(color);
             g2d.fillRect(x, y, 50, 30);

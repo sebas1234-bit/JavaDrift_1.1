@@ -32,13 +32,14 @@ public abstract class Vehiculo {
 
     public void dibujar(Graphics g) {
         if (imagen != null) {
-            g.drawImage(imagen, x, y, 50, 30, null);
+            g.drawImage(imagen, x, y, 36, 22, null);
         } else {
             g.setColor(this.color);
-            g.fillRect(x, y, 50, 30);
+            g.fillRect(x, y, 36, 22);
         }
         g.setColor(Color.WHITE);
-        g.drawString(nombre, x, y - 5);
+        g.setFont(new java.awt.Font("Arial", java.awt.Font.PLAIN, 11));
+        g.drawString(nombre, x, y - 4);
     }
 
     public int getX() { return x; }
